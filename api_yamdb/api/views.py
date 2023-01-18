@@ -12,7 +12,7 @@ class CreateListDestroyViewSet(mixins.CreateModelMixin,
     pass
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
