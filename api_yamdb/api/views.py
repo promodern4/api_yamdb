@@ -1,8 +1,15 @@
-from rest_framework import filters, viewsets
+from rest_framework import filters, mixins, viewsets
 
 from .permissions import IsAdminOrReadOnly
 from .serializers import GenreSerializer
 from reviews.models import Genre
+
+
+class CreateListDestroyViewSet(mixins.CreateModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
+    pass
 
 
 class GenreViewSet(viewsets.ModelViewSet):
