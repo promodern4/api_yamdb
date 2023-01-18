@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 
-from posts.models import Genre
+from reviews.models import Genre
 
 
 class GenreSerializer(serializers.ModelSerializer):
