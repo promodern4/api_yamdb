@@ -1,7 +1,14 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import User
+from reviews.models import Genre, User
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ('name', 'slug')
+
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()

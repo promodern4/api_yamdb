@@ -1,14 +1,23 @@
 from django.contrib.auth.tokens import default_token_generator
-from django.shortcuts import render
 from django.core.mail import send_mail
-from rest_framework import permissions, status
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import User
-from .serializers import RegisterSerializer, TokenSerializer
+from reviews.models import Genre, User
+from .permissions import IsAdminOrReadOnly
+from .serializers import (GenreSerializer,
+                          RegisterSerializer,
+                          TokenSerializer,)
+
+
+class CreateListDestroyViewSet(mixins.CreateModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
+    pass
 
 
 @api_view(["POST"])
@@ -48,3 +57,11 @@ def register(request):
         recipient_list=[user.email],
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class GenreViewSet(CreateListDestroyViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)

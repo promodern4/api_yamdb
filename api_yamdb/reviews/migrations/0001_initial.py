@@ -46,4 +46,16 @@ class Migration(migrations.Migration):
             model_name='user',
             constraint=models.CheckConstraint(check=models.Q(_negated=True, username__iexact='me'), name='username_is_not_me'),
         ),
+        migrations.CreateModel(
+            name='Genre',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=256, verbose_name='Название')),
+                ('slug', models.SlugField(unique=True, verbose_name='Указатель')),
+            ],
+            options={
+                'verbose_name': 'Жанр',
+                'verbose_name_plural': 'Жанры',
+            },
+        ),
     ]
