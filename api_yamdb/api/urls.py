@@ -2,10 +2,12 @@ from django.urls import include, path
 from .views import get_jwt_token, register
 from rest_framework.routers import DefaultRouter
 
-from .views import GenreViewSet
+from .views import (CategoryViewSet,
+                    GenreViewSet)
 
 
 v1_router = DefaultRouter()
+v1_router.register(r'categories', CategoryViewSet)
 v1_router.register(r'genres', GenreViewSet)
 
 urlpatterns = [

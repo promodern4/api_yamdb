@@ -6,9 +6,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Genre, User
+from reviews.models import Category, Genre, User
 from .permissions import IsAdminOrReadOnly
-from .serializers import (GenreSerializer,
+from .serializers import (CategorySerializer,
+                          GenreSerializer,
                           RegisterSerializer,
                           TokenSerializer,)
 
@@ -57,6 +58,14 @@ def register(request):
         recipient_list=[user.email],
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CategoryViewSet(CreateListDestroyViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_field = ('name',)
 
 
 class GenreViewSet(CreateListDestroyViewSet):
