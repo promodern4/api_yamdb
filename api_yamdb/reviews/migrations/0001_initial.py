@@ -3,6 +3,8 @@
 import django.contrib.auth.models
 from django.db import migrations, models
 import django.utils.timezone
+import django.db.models.deletion
+import reviews.validators
 
 
 class Migration(migrations.Migration):
@@ -69,5 +71,32 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Жанр',
                 'verbose_name_plural': 'Жанры',
             },
+        ),
+        migrations.CreateModel(
+            name='GenreTitle',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('genre', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reviews.genre', verbose_name='Жанр')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Title',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=200, verbose_name='Название')),
+                ('year', models.IntegerField(validators=[reviews.validators.validate_year], verbose_name='Дата выхода')),
+                ('description', models.TextField(blank=True, null=True, verbose_name='Описание')),
+                ('category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='titles', to='reviews.category', verbose_name='Категория')),
+                ('genre', models.ManyToManyField(through='reviews.GenreTitle', to='reviews.Genre', verbose_name='Жанр')),
+            ],
+            options={
+                'verbose_name': 'Произведение',
+                'verbose_name_plural': 'Произведения',
+            },
+        ),
+        migrations.AddField(
+            model_name='genretitle',
+            name='title',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reviews.title', verbose_name='Произведение'),
         ),
     ]
