@@ -156,3 +156,7 @@ class Comment(models.Model):
     text = models.TextField()
     created = models.DateTimeField(
         'Дата создания', auto_now_add=True, db_index=True)
+
+
+class New(models.Model):
+    me = models.TextField()
