@@ -32,7 +32,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleListSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField(source='',
+    rating = serializers.IntegerField(source='reviews__score__avg',
                                       read_only=True)
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
