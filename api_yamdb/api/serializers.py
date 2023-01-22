@@ -142,6 +142,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
         model = User
+        lookup_field = 'username'
+        extra_kwargs = {
+            'url': {'lookup_field': 'username'}
+        }
 
 
 class OwnUserSerializer(serializers.ModelSerializer):
