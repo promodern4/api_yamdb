@@ -58,12 +58,16 @@ class TokenSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
+    username = serializers.RegexField(
+        required=True,
+        max_length=150,
+        regex=r"^[^\\W\d]\w*$",
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ]
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ]
@@ -75,8 +79,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     class Meta:
-        fields = ('username', 'email')
         model = User
+        fields = ('username', 'email')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -126,13 +130,16 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
+    username = serializers.RegexField(
+        max_length=150,
+        regex=r"^[^\\W\d]\w*$",
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ],
         required=True,
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ]
