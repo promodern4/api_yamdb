@@ -60,6 +60,14 @@ def register(request):
     if serializer.is_valid():
         username = serializer.validated_data['username']
         email = serializer.validated_data['email']
+        if (not User.objects.filter(username=username).exists() and
+            User.objects.filter(email=email).exists()):
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        if (
+            User.objects.filter(username=username).exists() and 
+            get_object_or_404(User,username=serializer.validated_data['username']).email != email
+            ):
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
         if (User.objects.filter(username=username).exists() or
             User.objects.filter(email=email).exists()):
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -68,6 +76,8 @@ def register(request):
             User,
             username=serializer.validated_data['username']
         )
+        if user.email != email:
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
             subject='Регистрация в YamDB',

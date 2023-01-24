@@ -62,15 +62,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         required=True,
         max_length=150,
         regex=r"^[^\\W\d]\w*$",
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
+        #validators=[
+        #    UniqueValidator(queryset=User.objects.all())
+        #],
     )
     email = serializers.EmailField(
         max_length=254,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
+        #validators=[
+        #    UniqueValidator(queryset=User.objects.all())
+        #],
     )
 
     def validate_username(self, value):
