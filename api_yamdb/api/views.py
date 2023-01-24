@@ -55,20 +55,29 @@ def get_jwt_token(request):
 @permission_classes([permissions.AllowAny])
 def register(request):
     serializer = RegisterSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data['username']
+    #username = serializer.data['username']
+    #email = serializer.data['email']
+    #if (User.objects.filter(username=username).exists() or
+    #    User.objects.filter(email=email).exists()):
+    #    return Response(serializer.data, status=status.HTTP_200_OK)
+    if serializer.is_valid():
+        serializer.save()
+        user = get_object_or_404(
+            User,
+            username=serializer.validated_data['username']
+        )
+        confirmation_code = default_token_generator.make_token(user)
+        send_mail(
+            subject='Регистрация в YamDB',
+            message=f'Ваш код подтверждения : {confirmation_code}',
+            from_email=None,
+            recipient_list=[user.email],
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST
     )
-    confirmation_code = default_token_generator.make_token(user)
-    send_mail(
-        subject='Регистрация в YamDB',
-        message=f'Ваш код подтверждения : {confirmation_code}',
-        from_email=None,
-        recipient_list=[user.email],
-    )
-    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(CreateListDestroyViewSet):

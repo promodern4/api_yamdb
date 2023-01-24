@@ -156,6 +156,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class OwnUserSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        max_length=150,
+        regex=r"^[^\\W\d]\w*$",
+        validators=[
+            UniqueValidator(queryset=User.objects.all())
+        ],
+        required=True,
+    )
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
