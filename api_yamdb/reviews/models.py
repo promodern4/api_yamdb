@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 from .validators import validate_year
 
@@ -58,7 +58,7 @@ class User(AbstractUser):
                 check=~models.Q(username__iexact='me'),
                 name='username_is_not_me'
             ),
-             models.UniqueConstraint(
+            models.UniqueConstraint(
                 fields=['username', 'email'], name='unique_user'
             )
         ]

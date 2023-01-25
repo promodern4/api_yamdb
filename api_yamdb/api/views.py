@@ -10,19 +10,12 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
-from .permissions import (IsAdmin,
-                          IsAdminOrReadOnly,
-                          IsAdminModeratorOwnerOrReadOnly)
-from .serializers import (CategorySerializer,
-                          CommentSerializer,
-                          GenreSerializer,
-                          OwnUserSerializer,
-                          RegisterSerializer,
-                          ReviewSerializer,
-                          TitleSerializer,
-                          TitleListSerializer,
-                          TokenSerializer,
-                          UserSerializer)
+from .permissions import (IsAdmin, IsAdminModeratorOwnerOrReadOnly,
+                          IsAdminOrReadOnly)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, RegisterSerializer,
+                          ReviewSerializer, TitleListSerializer,
+                          TitleSerializer, TokenSerializer, UserSerializer)
 
 
 class CreateListDestroyViewSet(mixins.CreateModelMixin,
@@ -51,8 +44,6 @@ def get_jwt_token(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register(request):
@@ -60,16 +51,26 @@ def register(request):
     if serializer.is_valid():
         username = serializer.validated_data['username']
         email = serializer.validated_data['email']
-        if (not User.objects.filter(username=username).exists() and
-            User.objects.filter(email=email).exists()):
-            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
         if (
-            User.objects.filter(username=username).exists() and 
-            get_object_or_404(User,username=serializer.validated_data['username']).email != email
-            ):
-            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
-        if (User.objects.filter(username=username).exists() or
-            User.objects.filter(email=email).exists()):
+            not User.objects.filter(username=username).exists()
+            and User.objects.filter(email=email).exists()
+        ):
+            return Response(
+                serializer.data, status=status.HTTP_400_BAD_REQUEST
+            )
+        if (
+            User.objects.filter(username=username).exists()
+            and get_object_or_404(
+                User,
+                username=serializer.validated_data['username']).email != email
+        ):
+            return Response(
+                serializer.data, status=status.HTTP_400_BAD_REQUEST
+            )
+        if (
+            User.objects.filter(username=username).exists()
+            or User.objects.filter(email=email).exists()
+        ):
             return Response(serializer.data, status=status.HTTP_200_OK)
         serializer.save()
         user = get_object_or_404(
@@ -77,7 +78,9 @@ def register(request):
             username=serializer.validated_data['username']
         )
         if user.email != email:
-            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.data, status=status.HTTP_400_BAD_REQUEST
+            )
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
             subject='Регистрация в YamDB',
@@ -117,7 +120,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-    # filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
     def get_serializer_class(self):
         # Для чтения списка или одного эксземпляра

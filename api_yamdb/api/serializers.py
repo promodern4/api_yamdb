@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
@@ -61,16 +61,10 @@ class RegisterSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
         required=True,
         max_length=150,
-        regex=r"^[^\\W\d]\w*$",
-        #validators=[
-        #    UniqueValidator(queryset=User.objects.all())
-        #],
+        regex=r"^[^\\W\d]\w*$"
     )
     email = serializers.EmailField(
-        max_length=254,
-        #validators=[
-        #    UniqueValidator(queryset=User.objects.all())
-        #],
+        max_length=254
     )
 
     def validate_username(self, value):
@@ -164,6 +158,7 @@ class OwnUserSerializer(serializers.ModelSerializer):
         ],
         required=True,
     )
+
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
