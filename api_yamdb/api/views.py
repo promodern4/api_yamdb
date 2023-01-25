@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
@@ -45,8 +45,10 @@ def get_jwt_token(request):
     if default_token_generator.check_token(
         user, serializer.validated_data["confirmation_code"]
     ):
-        token = AccessToken.for_user(user)
-        return Response({"token": str(token)}, status=status.HTTP_200_OK)
+        #token = AccessToken.for_user(user)
+        #return Response({"token": str(token)}, status=status.HTTP_200_OK)
+        token = RefreshToken.for_user(user)
+        return Response({"token": str(token.access_token)}, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
