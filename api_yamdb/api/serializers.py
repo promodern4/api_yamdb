@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
@@ -53,37 +53,28 @@ class TitleListSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True)
-    confirmation_code = serializers.CharField(required=True)
-
-    class Meta:
-        model = User
-        fields = ('username', 'confirmation_code')
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
         required=True,
         max_length=150,
-        regex=r"^[^\\W\d]\w*$",
-        #validators=[
-        #    UniqueValidator(queryset=User.objects.all())
-        #]
+        regex=r"^[^\\W\d]\w*$"
     )
     email = serializers.EmailField(
-        max_length=254,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
+        max_length=254
     )
-    class Meta:
-        model = User
-        fields = ('username', 'email')
 
     def validate_username(self, value):
         if value.lower() == 'me':
             raise serializers.ValidationError('Логин "me" не допустим')
         return value
+
+    class Meta:
+        model = User
+        fields = ('username', 'email')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -157,14 +148,6 @@ class UserSerializer(serializers.ModelSerializer):
             'url': {'lookup_field': 'username'}
         }
 
-        #validators = [
-        #    UniqueTogetherValidator(
-        #        queryset=User.objects.all(),
-        #        fields=('username', 'email')
-        #    )
-        #]
-
-
 
 class OwnUserSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
@@ -175,6 +158,7 @@ class OwnUserSerializer(serializers.ModelSerializer):
         ],
         required=True,
     )
+
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
