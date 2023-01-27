@@ -1,19 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from .validators import validate_year
 
 
-class User(AbstractUser):
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-    USER = 'user'
-    ROLES = [
-        (ADMIN, 'Administrator'),
-        (MODERATOR, 'Moderator'),
-        (USER, 'User'),
-    ]
+class UserRole(models.TextChoices):
+    ADMIN = 'admin', 'Администратор'
+    MODERATOR = 'moderator', 'Модератор'
+    USER = 'user', 'Пользователь'
 
+
+class User(AbstractUser):
     email = models.EmailField(
         max_length=254,
         verbose_name='Электронная почта',
@@ -26,10 +24,10 @@ class User(AbstractUser):
         unique=True,
     )
     role = models.CharField(
-        verbose_name='Роль',
         max_length=50,
-        choices=ROLES,
-        default=USER,
+        choices=UserRole.choices,
+        default=UserRole.USER,
+        verbose_name='Роль'
     )
     bio = models.TextField(
         verbose_name='О себе',
@@ -39,11 +37,11 @@ class User(AbstractUser):
 
     @property
     def is_moderator(self):
-        return self.role == self.MODERATOR
+        return self.role == UserRole.MODERATOR
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN
+        return self.role == UserRole.ADMIN
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -99,11 +97,9 @@ class Genre(models.Model):
 class Title(models.Model):
     name = models.CharField(verbose_name='Название',
                             max_length=200)
-    year = models.IntegerField(verbose_name='Дата выхода',
-                               validators=[validate_year])
-    rating = models.IntegerField(verbose_name='Рейтинг',
-                                 null=True,
-                                 default=None)
+    year = models.PositiveIntegerField(verbose_name='Дата выхода',
+                                       validators=[validate_year,
+                                                   MinValueValidator(1900)])
     description = models.TextField(verbose_name='Описание',
                                    null=True,
                                    blank=True)
@@ -138,13 +134,23 @@ class GenreTitle(models.Model):
 
 class Review(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews')
+        User, on_delete=models.CASCADE, related_name='reviews',
+        verbose_name='Автор'
+    )
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='reviews')
-    score = models.IntegerField()
-    text = models.TextField()
+        Title, on_delete=models.CASCADE, related_name='reviews',
+        verbose_name='Произведение'
+    )
+    score = models.PositiveSmallIntegerField(validators=[
+        MinValueValidator(0),
+        MaxValueValidator(10)],
+        verbose_name='Оценка'
+    )
+    text = models.TextField(verbose_name='Текст отзыва')
     pub_date = models.DateTimeField(
-        'Дата создания', auto_now_add=True, db_index=True)
+        auto_now_add=True, db_index=True,
+        verbose_name='Дата создания'
+    )
 
     class Meta:
         verbose_name = 'Отзыв'
@@ -160,12 +166,16 @@ class Review(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments')
+        User, on_delete=models.CASCADE, related_name='comments',
+        verbose_name='Автор'
+    )
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments')
-    text = models.TextField()
+        Review, on_delete=models.CASCADE, related_name='comments',
+        verbose_name='Отзыв'
+    )
+    text = models.TextField(verbose_name='Текст комментария')
     pub_date = models.DateTimeField(
-        'Дата создания', auto_now_add=True, db_index=True)
+        verbose_name='Дата создания', auto_now_add=True, db_index=True)
 
     class Meta:
         verbose_name = 'Комментарий'
