@@ -1,3 +1,4 @@
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
@@ -91,11 +92,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Review
 
-    def validate_score(self, value):
-        if not (1 <= value <= 10):
-            raise serializers.ValidationError('Оценка должна быть от 1 до 10')
-        return value
-
     def validate(self, data):
         request = self.context['request']
         author = request.user
@@ -124,11 +120,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
+    username = serializers.CharField(
         max_length=150,
-        regex=r"^[^\\W\d]\w*$",
         validators=[
-            UniqueValidator(queryset=User.objects.all())
+            UniqueValidator(queryset=User.objects.all()),
+            UnicodeUsernameValidator()
         ],
         required=True,
     )
@@ -150,11 +146,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class OwnUserSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
+    username = serializers.CharField(
         max_length=150,
-        regex=r"^[^\\W\d]\w*$",
         validators=[
-            UniqueValidator(queryset=User.objects.all())
+            UniqueValidator(queryset=User.objects.all()),
+            UnicodeUsernameValidator()
         ],
         required=True,
     )

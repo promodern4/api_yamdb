@@ -56,7 +56,7 @@ class User(AbstractUser):
                 check=~models.Q(username__iexact='me'),
                 name='username_is_not_me'
             ),
-             models.UniqueConstraint(
+            models.UniqueConstraint(
                 fields=['username', 'email'], name='unique_user'
             )
         ]

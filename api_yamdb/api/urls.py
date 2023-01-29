@@ -18,8 +18,12 @@ v1_router.register(
 )
 v1_router.register(r'users', UserViewSet)
 
+auth_patterns = [
+    path('signup/', register, name='register'),
+    path('token/', get_jwt_token, name='token')
+]
+
 urlpatterns = [
+    path('v1/auth/', include(auth_patterns)),
     path('v1/', include(v1_router.urls)),
-    path('v1/auth/signup/', register, name='register'),
-    path('v1/auth/token/', get_jwt_token, name='token')
 ]
