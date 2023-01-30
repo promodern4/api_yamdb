@@ -1,6 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
@@ -48,51 +48,41 @@ def get_jwt_token(request):
 @permission_classes([permissions.AllowAny])
 def register(request):
     serializer = RegisterSerializer(data=request.data)
-    if serializer.is_valid():
-        username = serializer.validated_data['username']
-        email = serializer.validated_data['email']
-        if (
-            not User.objects.filter(username=username).exists()
-            and User.objects.filter(email=email).exists()
-        ):
-            return Response(
-                serializer.data, status=status.HTTP_400_BAD_REQUEST
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data['username']
+    email = serializer.validated_data['email']
+    if User.objects.exclude(username=username).filter(email=email).exists():
+        return (
+            Response(
+                'Пользователь с такими данными уже существует',
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        if (
-            User.objects.filter(username=username).exists()
-            and get_object_or_404(
-                User,
-                username=serializer.validated_data['username']).email != email
-        ):
-            return Response(
-                serializer.data, status=status.HTTP_400_BAD_REQUEST
-            )
-        if (
-            User.objects.filter(username=username).exists()
-            or User.objects.filter(email=email).exists()
-        ):
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        serializer.save()
-        user = get_object_or_404(
-            User,
-            username=serializer.validated_data['username']
         )
-        if user.email != email:
-            return Response(
-                serializer.data, status=status.HTTP_400_BAD_REQUEST
+
+    if User.objects.filter(username=username).exclude(email=email).exists():
+        return (
+            Response(
+                'Пользователь с такими данными уже существует',
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        confirmation_code = default_token_generator.make_token(user)
-        send_mail(
-            subject='Регистрация в YamDB',
-            message=f'Ваш код подтверждения : {confirmation_code}',
-            from_email=None,
-            recipient_list=[user.email],
         )
+
+    if User.objects.filter(Q(username=username) | Q(email=email)).exists():
         return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(
-        serializer.errors,
-        status=status.HTTP_400_BAD_REQUEST
+    serializer.save()
+    user = get_object_or_404(
+        User,
+        username=serializer.validated_data['username']
     )
+
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        subject='Регистрация в YamDB',
+        message=f'Ваш код подтверждения : {confirmation_code}',
+        from_email='API_YAMDB@test.ru',
+        recipient_list=[user.email],
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(CreateListDestroyViewSet):
@@ -146,11 +136,19 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminModeratorOwnerOrReadOnly,)
 
     def get_queryset(self):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        review = get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title__id=self.kwargs.get('title_id')
+        )
         return review.comments.all()
 
     def perform_create(self, serializer):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        review = get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title__id=self.kwargs.get('title_id')
+        )
         serializer.save(author=self.request.user, review=review)
 
 
@@ -186,11 +184,9 @@ class UserViewSet(mixins.ListModelMixin,
     @action(
         detail=False,
         methods=['get', 'patch'],
-        url_path='me',
-        url_name='me',
         permission_classes=(permissions.IsAuthenticated,)
     )
-    def get_me_data(self, request):
+    def me(self, request):
         if request.method == 'PATCH':
             serializer = UserSerializer(
                 request.user, data=request.data,

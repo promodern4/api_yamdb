@@ -17,7 +17,6 @@ v1_router.register(
     r'/comments', CommentViewSet, basename='comments'
 )
 v1_router.register(r'users', UserViewSet)
-
 auth_patterns = [
     path('signup/', register, name='register'),
     path('token/', get_jwt_token, name='token')

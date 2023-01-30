@@ -62,10 +62,10 @@ class RegisterSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
         required=True,
         max_length=150,
-        regex=r"^[^\\W\d]\w*$"
+        regex=r"^[^\\W\d]\w*$",
     )
     email = serializers.EmailField(
-        max_length=254
+        max_length=254,
     )
 
     def validate_username(self, value):
