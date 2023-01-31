@@ -108,7 +108,25 @@ RESPONCE
 ```
 
 ### Импорт данных
-Из дериктории проекта запустите команду import:
+Из дериктории проекта запустите команды импорта:
 ```
-python3 manage.py import
+python3 manage.py ImportUsersCsv
+```
+```
+python3 manage.py ImportCategoryCsv
+```
+```
+python3 manage.py ImportGenreCsv
+```
+```
+python3 manage.py ImportTitleCsv
+```
+```
+python3 manage.py ImportGenreTitleCsv
+```
+```
+python3 manage.py ImportReviewCsv
+```
+```
+python3 manage.py ImportCommentCsv
 ```
